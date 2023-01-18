@@ -551,7 +551,7 @@ function Tables.ToValueObjects(Table: table, RootObject: (string | Instance)?, P
 
 	if typeof(RootObject) == "Instance" then
 		ToReturn = RootObject
-	elseif typeof(RootObject) == "string" then
+	elseif type(RootObject) == "string" then
 		local Success, Obj = pcall(function() return Instance.new(RootObject) end)
 		if Success then ToReturn = Obj else ToReturn = Instance.new("Folder") end
 	else
@@ -574,7 +574,7 @@ function Tables.ToValueObjects(Table: table, RootObject: (string | Instance)?, P
 	Processed[Table] = true
 	for Key, Value in pairs(Table) do
 		local ValueType = typeof(Value)
-		local Name = (typeof(Key) ~= "Instance" and Key) or (tostring(Key))
+		local Name = tostring(Key)
 		if ValueType ~= "table" then
 			local Obj = Instance.new(ObjectsMapping[ValueType])
 			Obj.Name = Name
