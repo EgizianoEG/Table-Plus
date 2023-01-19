@@ -22,7 +22,7 @@ type array = {[number]: any}
 --| Returns the number of elements in the given Tables.
 function Tables.Length(Table: table): number
 	assert(type(Table) == "table", "Invalid Argument [1]; Table expected.")
-	-------------------------------------------------------------------------|
+	----------------------------------------------------------------------|
 
 	local Count = 0
 	for _ in pairs(Table) do
@@ -55,7 +55,7 @@ end
 function Tables.Update(Original: table, Update: table, FillEmptyOnly: boolean): (table)
 	assert(type(Original) == "table", "Invalid Argument [1]; \"Original\" must be a table")
 	assert(type(Update) == "table", "Invalid Argument [2]; \"Update\" must be a table")
-	-----------------------------------------------------------------------------------------|
+	--------------------------------------------------------------------------------------|
 	for Key, Value in pairs(Update) do
 		if FillEmptyOnly then
 			if Original[Key] == nil then
@@ -78,7 +78,7 @@ function Tables.Intersect(Table_1: table, Table_2: table, ShouldMatchValues: boo
 	assert(type(Table_2) == "table", "Invalid Argument [2]; Table expected.")
 	-------------------------------------------------------------------------|
 
-    ShouldMatchValues = (ShouldMatchValues ~= nil and ShouldMatchValues) or true
+	ShouldMatchValues = (ShouldMatchValues ~= nil and ShouldMatchValues) or true
 	local Intersect = {}
 	if Tables.IsArray(Table_1) and Tables.IsArray(Table_2) then
 		for _, Element in ipairs(Table_1) do
@@ -89,13 +89,13 @@ function Tables.Intersect(Table_1: table, Table_2: table, ShouldMatchValues: boo
 	else
 		for Key, Value in pairs(Table_1) do
 			if Table_2[Key] then
-                if ShouldMatchValues then
-                    if Table_2[Key] == Value then
-                        Intersect[Key] = Value
-                    end
-                else
-                    Intersect[Key] = Value
-                end
+				if ShouldMatchValues then
+					if Table_2[Key] == Value then
+						Intersect[Key] = Value
+					end
+				else
+					Intersect[Key] = Value
+				end
 			end
 		end
 	end
@@ -147,7 +147,7 @@ function Tables.GetPathValue(Table: table, Str: string, Separator: string?): (an
 	assert(type(Table) == "table", "Invalid Argument [1]; Table expected.")
 	assert(type(Str) == "string", "Invalid Argument [2]; Must be a string.")
 	assert(type(Separator) == "string" or Separator == nil, "Invalid Argument [3]; Separator be a string.")
-	--------------------------------------------------------------------------------------------------------|
+	------------------------------------------------------------------------------------------------------|
 
 	local NumericIndexPattern = ("^%[(%d+)%]$")         --| e.g. Table.[1].[2]
 	local Keys = string.split(Str, (Separator or "."))
@@ -310,7 +310,7 @@ end
 function Tables.ParseString(Str: string, Separator: string?, UseLoadstring: boolean?)
 	assert(type(Str) == "string", "Invalid Argument [1]; String expected.")
 	assert((type(Separator) == "string" and #Separator > 0) or Separator == nil, "Invalid Argument [2]; String expected.")
-	--------------------------------------------------------------------------------------------------------|
+	---------------------------------------------------------------------------------------------------------------------|
 
 	local Separator = (Separator or ",")
 	if UseLoadstring then return (loadstring("return " .. Str)::any)() end
@@ -367,7 +367,7 @@ end
 function Tables.ClearRange(Array: array, Start: number, End: number?): (array)
 	assert(type(Array) == "table" and Tables.IsArray(Array), "Invalid Argument [1]; Array expected.")
 	assert(type(Start) == "number" and type(End) == "number", "Invalid Range Arguments. Start and End arguments must be numbers.")
-	--------------------------------------------------------------------------------------------------------|
+	-----------------------------------------------------------------------------------------------------------------------------|
 
 	if Start < 1 then
 		Start = 1
@@ -432,7 +432,7 @@ end
 function Tables.Reverse(Array: array, Method: number?)
 	assert(type(Array) == "table" and Tables.IsArray(Array), "Invalid Argument [1]; Array expected.")
 	assert(type(Method) == "number" or Method == nil, "Invalid Argument [1]; Array expected.")
-	---------------------------------------------------------------------------------------------------------------|
+	------------------------------------------------------------------------------------------------|
 
 	local Method = Method or 1
 	if Method == 1 then
@@ -491,7 +491,7 @@ end
 function Tables.SearchAndReplace(Table: table, Needle: any, Replacement: any?, IsRecursive: boolean?): (table, number)
 	assert(type(Table) == "table", "Invalid Argument [1]; Table expected.")
 	assert(Needle ~= nil, "Invalid Argument [2]; Received a nil argument.")
-	-----------------------------------------------------------------------|
+	----------------------------------------------------------------------|
 
 	local Replacements = 0
 	for Index, Value in pairs(Table) do
@@ -514,7 +514,7 @@ end
 -| @return	table - The resulting Tables.]]
 function Tables.DeconstructValueObjects(Ancestor: Instance): (table)
 	assert(typeof(Ancestor) == "Instance", "Invalid Argument [1]; Instance expected.")
-	----------------------------------------------------------------------------------|
+	---------------------------------------------------------------------------------|
 
 	local ToReturn = {}
 	for _, Inst: Instance in ipairs(Ancestor:GetChildren()) do
@@ -539,7 +539,7 @@ function Tables.ToValueObjects(Table: table, RootObject: (string | Instance)?, P
 	assert(type(RootObject) == "string" or typeof(RootObject) == "Instance" or RootObject == nil, "Invalid Argument [2]; ClassName or Instance expected.")
 	assert(typeof(Parent) == "Instance" or Parent == nil, "Error: Argument [3] must be an instance, but received an invalid type.")
 	assert(typeof(DefaultGroupingObject) == "string" or DefaultGroupingObject == nil, "Error: Argument [4] must be a string, but received an invalid type.")
-	-------------------------------------------------------------------------------------------------------------------------------
+	-------------------------------------------------------------------------------------------------------------------------------------------------------|
 
 	if Processed and Processed[Table] then
 		return nil::any
@@ -581,7 +581,7 @@ function Tables.ToValueObjects(Table: table, RootObject: (string | Instance)?, P
 			Obj.Value = Value
 			Obj.Parent = ToReturn
 		elseif ValueType == "table" then
-			local Children = Tables.ToValueObjects(Value::table, DGroupingClassName, ToReturn, DGroupingClassName, Processed)
+			local Children = Tables.ToValueObjects(Value, DGroupingClassName, ToReturn, DGroupingClassName, Processed)
 			if Children then Children.Name = Name end
 		end
 	end
@@ -594,12 +594,12 @@ end
 -| @param	Table_2: The second table to compare.
 -| @param	Recursive: Whether or not to recursively compare tables within the tables.
 -| @param	UseMetamethodEquality: Whether or not to use the __eq metamethod to compare tables (other comparison methods are ignored).
--| @param	Cache: A cache table to prevent infinite loops caused by cyclical references (usually used by the function itself).
+-| @param	Cache: A cache table to prevent infinite loops caused by cyclical references (used by the function itself).
 -| @return True if the tables are equal, false if they are not.]]
-function Tables.Equals(Table_1: {[any]: any}, Table_2: {[any]: any}, Recursive: boolean?, UseMetamethodEquality: boolean?, Cache: table?): boolean
+function Tables.Equals(Table_1: table, Table_2: table, Recursive: boolean?, UseMetamethodEquality: boolean?, Cache: table?): boolean
 	assert(type(Table_1) == "table", "Error: Argument [1] must be a table, but received an invalid type.")
 	assert(type(Table_2) == "table", "Error: Argument [2] must be a table, but received an invalid type.")
-	--------------------------------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------------------------------|
 
 	--| Early exit statements:
 	if rawequal(Table_1, Table_2) then return true end	--| Checking if the tables are the same table (i.e., stored in the same memory location)
@@ -654,10 +654,10 @@ function Tables.Equals(Table_1: {[any]: any}, Table_2: {[any]: any}, Recursive: 
 end
 
 
---------------------------------------------------|
+----------------------------------------------------------------------|
 --| Extended:
 -------------
---| Extended libraries integrating (Name Format: "[Extended] - <any>").
+--| Extended libraries integrating (Name Format: "[Extended] - <name>").
 for _, Library in ipairs(script:GetChildren()) do
 	local Match = string.match(Library.Name, "%[Extended%]%s%-%s(.+)")
 	if Library:IsA("ModuleScript") and Match then
@@ -676,9 +676,9 @@ for _, Library in ipairs(script:GetChildren()) do
 	end
 end
 
---| Renames function names to be all lowercased if desired.
+--| Rename function names to be lowercased if desired.
 if LowerCaseFunctionNames then
-	local Temp = {}::{[any]: (any)}
+	local Temp = {}
 	local SolveIndexing = function(t, k)
 		return (rawget(t, k:lower())) or nil
 	end
@@ -714,5 +714,5 @@ if MockupStandardLibrary then
 	end
 end
 
-------------------------------------------
-return Tables :: TypeChecking.TablesPascal
+-------------------------------------------
+return Tables :: TypeChecking.TablesLowered
