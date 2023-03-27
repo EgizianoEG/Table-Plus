@@ -299,7 +299,7 @@ function Tables.WeightedRandomChoice(Dictionary: {[any]: number})
 	return nil
 end
 
---[[ ParseString - Parse a string and return a Tables.
+--[[ ParseString - Parse a string and return a Table.
 ---| This function parses a string and returns a table representation of it. It is not 100% accurate but at least it works :d (it was really tough writing it).
 ---| The string can contain numbers, strings, and nested tables.
 ---| The separator parameter specifies the character used to separate elements in the string (Note: Please do not use separator characters within any provided key-value especially with nested tables).
