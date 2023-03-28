@@ -299,61 +299,60 @@ function Tables.WeightedRandomChoice(Dictionary: {[any]: number})
 	return nil
 end
 
---[[ ParseString - Parse a string and return a Table.
----| This function parses a string and returns a table representation of it. It is not 100% accurate but at least it works :d (it was really tough writing it).
----| The string can contain numbers, strings, and nested tables.
----| The separator parameter specifies the character used to separate elements in the string (Note: Please do not use separator characters within any provided key-value especially with nested tables).
--| @param   Str: The string to be parsed.
--| @param   Separator: The separator character used to separate elements in the string.
--| @param   UseLoadstring: A boolean value indicating whether to use the loadstring function to parse the string.
--| @return  A table representation of the string.]]
-function Tables.ParseString(Str: string, Separator: string?, UseLoadstring: boolean?)
+--[[ ParseString - Parse a string and return a table.
+-| @param   Str: The string to be parsed. Can contain numbers, strings, and nested tables.
+-| @param   Separator: The separator character used to separate elements in the string. (Note: Do not use separator characters within any provided key-value especially with nested tables otherwise it will give inaccurate results)
+-| @return  A table representation of the given string.
+-| @example ParseString("'Hello World', test1, 1, 2") -> {[1] = "HelloWorld", [2] = "test1", [3] = 1, [4] = 2} ]]
+function ParseString(Str: string, Separator: string?)
 	assert(type(Str) == "string", "Invalid Argument [1]; String expected.")
-	assert((type(Separator) == "string" and #Separator > 0) or Separator == nil, "Invalid Argument [2]; String expected.")
+	assert((type(Separator) == "string" and #Separator > 0) or Separator == nil, "Invalid Argument [2]; Separator string expected.")
 	---------------------------------------------------------------------------------------------------------------------|
 
 	local Separator = (Separator or ",")
-	if UseLoadstring then return (loadstring("return " .. Str)::any)() end
-
-	local KeyValuePattern = "%s*(%[*[\"']*%]*[%s%w%p_]+%[*[\"']*%]*)%s*=%s*(%[*[\"']*%]*[%s%w%p_]+%[*[\"']*%]*)%s*$"
-	local StringValuePattern = "%s*(%[*[\"']*%]*[%s%w%p_]+%[*[\"']*%]*)%s*"
-	local TablePattern = "([" .. Separator .. "]*%s*[^" .. Separator .. "]+%s*=%s*{.+}%s*)"
-	local TableKVPattern = "%[*[\"']*([%w%p%s_]+)[\"']*%]*%s*=%s*{([%w%p%s_]+)}"
+	local KeyValuePattern = "%s*%[?[\"']?(.-)[\"']?%]?%s*=%s*[\"']?(.+)[\"']?%s*"
+	local StringValuePattern = "^%s*%[?[\"']?(.-)[\"']?%]?%s*$"
+	local TablePattern = "[" .. Separator .. "]*%s*([^" .. Separator .. "]+%s*=%s*{.+}%s*)"
+	local TableKVPattern = "%[?[\"']?(.-)[\"']?%]?%s*=%s*{(.+)}"
 
 	local Table: any = {}
 	local NMatches:{{string | number}}= {}
-
+	Str = string.match(Str, "^{?%s*(.-)%s*}?$")
+	
 	for NestedTable in string.gmatch(Str, TablePattern) do
 		local Starting, Ending = string.find(Str, NestedTable, (NMatches[#NMatches] and NMatches[#NMatches][3]::number - 1) or 1, true)
 		if Starting and Ending then
 			NMatches[#NMatches+1] = {NestedTable, Starting, Ending}
 		end
 	end
-
+		
 	for _, MatchingTable in ipairs(NMatches) do
 		local Pairs, Starting: any, Ending: any = MatchingTable[1], MatchingTable[2], MatchingTable[3]
 		local Key, Value = string.match(Pairs::string, TableKVPattern)
-		Table[string.gsub(Key, "[ " .. Separator .. "\"']+", "")] = Tables.ParseString(Value, Separator)
+		Table[string.gsub(Key, "[ " .. Separator .. "\"']+", "")] = ParseString(Value, Separator)
 		Str = (string.sub(Str, 1, Starting-1) .. string.sub(Str, Ending+1))
 	end
-
+	
 	for Sub in string.gmatch(Str, "([^".. Separator .."]+)") do
-		if tonumber(Sub) then
-			Table[#Table+1] = tonumber(Sub)
+		local IsBlank = string.match(Sub, "^%s*$") ~= nil
+		local NumberValue = tonumber(Sub)
+		local StringValue = string.match(Sub, StringValuePattern)
+		local Key, Value = string.match(Sub, KeyValuePattern)
+		
+		if IsBlank then
+			continue
+			
+		elseif NumberValue then
+			Table[#Table+1] = NumberValue
 
-		elseif Sub:match(StringValuePattern) and not Sub:match("=") then
-			Sub = Sub:gsub(StringValuePattern, "%1"):gsub("[%[%]'\"]", "")
+		elseif StringValue and not string.match(Sub, "=") then
+			Sub = string.match(Sub, "^%s*%[?[\"']?(.-)[\"']?%]?%s*$")
 			Table[#Table+1] = Sub
 
-		elseif Sub:match(KeyValuePattern) then
-			for Cap1, Cap2 in string.gmatch(Sub, KeyValuePattern) do
-				if not Cap1:match("[%[%]'\"]") then
-					Cap1 = Cap1:gsub("%s", "")
-				end
-				Cap2 = Cap2:gsub("[%[%]'\"]", "")
-				Cap1 = Cap1:gsub("%s*(%[[^%[%]]+%])%s*", "%1"):gsub("[%[%]'\"]", "")
-				Table[Cap1] = Cap2
-			end
+		elseif Key and Value then
+			Key = tonumber(Key) or Key
+			Value = tonumber(Value) or Value
+			Table[Key] = Value
 		end
 	end
 	return Table
